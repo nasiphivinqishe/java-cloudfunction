@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudFormation template to create a Lambda function with API Gateway
+
+Resources:
+  DoRefundHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/example.jar
+      Handler: com.myplusplus.mytransit.handlers.DoRefundHandler::handleRequest
+      Role: !GetAtt DoRefundRole.Arn
+      Runtime: java11
+      MemorySize: 3008
+      EphemeralStorage:
+        Size: 1024
+      Timeout: 29
+
+  DoRefundPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt DoRefundHandler.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyTransitAPI}/*/*
+
+  DoRefundPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: LambdaFunctionPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "*"
+      Roles:
+        - !Ref DoRefundRole
+
+  DoRefundRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: "*"
+
+  MyTransitAPI:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+      Name: "MyTransitAPI"
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+
+  MyTransitResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !GetAtt MyTransitAPI.RootResourceId
+      PathPart: "refund"
+      RestApiId: !Ref MyTransitAPI
+
+  DoRefundMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      RestApiId: !Ref MyTransitAPI
+      ResourceId: !Ref MyTransitResource
+      HttpMethod: "POST"
+      AuthorizationType: "NONE"
+      Integration:
+        Type: "AWS_PROXY"
+        IntegrationHttpMethod: "POST"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DoRefundHandler.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+
+Outputs:
+  DoRefundFunctionArn:
+    Description: The ARN of the Lambda function
+    Value: !GetAtt DoRefundHandler.Arn
+  ApiGatewayUrl:
+    Description: The URL of the API Gateway
+    Value: !Sub https://${MyTransitAPI}.execute-api.${AWS::Region}.amazonaws.com/prod/refund
