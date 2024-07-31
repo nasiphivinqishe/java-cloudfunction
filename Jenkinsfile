@@ -9,7 +9,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Add your build steps here
+                    // Build steps
                     sh 'mvn clean install'
                 }
             }
@@ -17,10 +17,18 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Add your deploy steps here
+                    // Deploy steps
                     sh 'sam deploy --template-file dev-template.yaml --stack-name MyTransit5 --capabilities CAPABILITY_IAM --s3-bucket my-transit-dev-bucket'
                 }
             }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
