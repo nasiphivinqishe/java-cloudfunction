@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_CREDENTIALS = credentials('github-token')
+        GITHUB_CREDENTIALS = credentials('github-pat')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'github-token', url: 'https://github.com/nasiphivinqishe/java-cloudfunction.git'
+                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/nasiphivinqishe/java-cloudfunction.git'
             }
         }
         stage('Build') {
@@ -23,19 +23,9 @@ pipeline {
             steps {
                 script {
                     // Add your deploy steps here
-                    // Example: scp or rsync to a remote server
-                    sh 'scp target/myTransitApp.jar user@server:/path/to/deploy'
+                    sh 'sam deploy --template-file dev-template.yaml --stack-name MyTransit5 --capabilities CAPABILITY_IAM --s3-bucket my-transit-dev-bucket'
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
