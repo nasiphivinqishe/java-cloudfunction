@@ -1,13 +1,14 @@
 pipeline {
     agent any
-    stage('Validate') {
+
+    stages {
+            stage('Validate') {
             steps {
                 script {
                     sh 'ls -la'
                 }
             }
     }
-    // stages {
     //     stage('Checkout') {
     //         steps {
     //             git branch: 'main', url: 'https://github.com/nasiphivinqishe/java-cloudfunction.git'
@@ -29,13 +30,13 @@ pipeline {
     //             }
     //         }
     //     }
-    // }
-    // post {
-    //     success {
-    //         echo 'Pipeline succeeded!'
-    //     }
-    //     failure {
-    //         echo 'Pipeline failed!'
-    //     }
-    // }
+    }
+    post {
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
 }
