@@ -36,7 +36,7 @@ pipeline {
             echo 'Pipeline succeeded!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed! This is the Jenkins file on github!!!!'
         }
     }
 }
