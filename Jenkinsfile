@@ -6,6 +6,7 @@ pipeline {
                     sh 'ls -la'
                 }
             }
+    }
     // stages {
     //     stage('Checkout') {
     //         steps {
