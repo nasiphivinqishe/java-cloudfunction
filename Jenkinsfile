@@ -1,14 +1,9 @@
 pipeline {
     agent any
-
-    environment {
-        GITHUB_CREDENTIALS = credentials('github-pat')
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/nasiphivinqishe/java-cloudfunction.git'
+                git branch: 'main', url: 'https://github.com/nasiphivinqishe/java-cloudfunction.git'
             }
         }
         stage('Build') {
